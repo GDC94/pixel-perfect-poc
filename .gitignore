@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+dist-ssr/
+
+# Playwright runtime output — never commit these.
+# Baselines live in tests/visual/__screenshots__/ and ARE committed.
+test-results/
+playwright-report/
+blob-report/
+.playwright/
+
+# Local tooling
+.atl/
+.DS_Store
+*.local
+
+# Editors
+.vscode/*
+!.vscode/extensions.json
+.idea/
