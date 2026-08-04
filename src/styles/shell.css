@@ -1,6 +1,6 @@
 /*
  * App shell primitives shared by both routes.
- * No transitions, no animations — snapshots must be byte-identical.
+ * No transitions, no animations: snapshots must be byte-identical.
  */
 
 .page {

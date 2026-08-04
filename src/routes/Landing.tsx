@@ -7,7 +7,7 @@ import './Landing.css';
  * The only moving part is the footer timestamp, which is hardcoded precisely so
  * the suite can demonstrate `mask:` on genuinely dynamic content.
  *
- * Exactly one <header> exists on this route (the hero) — the visual suite
+ * Exactly one <header> exists on this route (the hero). The visual suite
  * targets `page.locator('header')` in strict mode.
  */
 export function Landing() {
@@ -39,7 +39,7 @@ export function Landing() {
         <p className="hero__lede">
           A deterministic UI, a containerised browser, and a baseline per component.
           Change one design token and the suite tells you exactly which surfaces
-          drifted — and which ones did not.
+          drifted, and which ones did not.
         </p>
         <div className="hero__actions">
           <Button>Run the suite</Button>
@@ -82,7 +82,7 @@ export function Landing() {
                 <h3 className="feature__title">Time is masked, not faked</h3>
                 <p className="feature__body">
                   One deliberate timestamp lives in the footer. The suite masks it
-                  instead of freezing the clock — the honest escape hatch for real
+                  instead of freezing the clock: the honest escape hatch for real
                   dynamic data.
                 </p>
               </div>

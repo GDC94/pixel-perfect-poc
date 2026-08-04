@@ -4,8 +4,8 @@ import { defineConfig, devices } from '@playwright/test';
  * Visual regression configuration.
  *
  * The governing idea: a screenshot baseline is a function of its rendering
- * environment. Anything that varies between two runs — OS, CPU architecture,
- * font rasterization, animation timing, data — will surface as a pixel diff.
+ * environment. Anything that varies between two runs (OS, CPU architecture,
+ * font rasterization, animation timing, data) will surface as a pixel diff.
  * Every option below removes one of those variables.
  *
  * Authoritative runs happen inside mcr.microsoft.com/playwright:v1.62.1-noble.
@@ -27,7 +27,7 @@ export default defineConfig({
   retries: 0, // A retried visual test is a lie: flakiness is the signal we want.
   /*
    * `dot` for per-test progress, `html` for the diff triptych, and a custom
-   * reporter that interprets the result instead of just counting it — see
+   * reporter that interprets the result instead of just counting it. See
    * tests/visual/reporter.ts for why a visual suite needs that.
    */
   reporter: [
@@ -45,22 +45,22 @@ export default defineConfig({
   expect: {
     toHaveScreenshot: {
       /*
-       * threshold      — per-pixel colour distance in the YIQ space, 0..1.
-       * maxDiffPixels  — how many pixels may exceed `threshold` before failing.
+       * threshold:     per-pixel colour distance in the YIQ space, 0..1.
+       * maxDiffPixels: how many pixels may exceed `threshold` before failing.
        *
        * On the current two-component surface, threshold 0 and threshold 0.2
        * produce identical results, so this setting buys nothing today. It is
        * here because of what happened on an earlier, larger layout: `Badge`
        * consumes no spacing token and should have been immune to a spacing
        * change, yet at threshold 0 it went red with 18 differing pixels at a
-       * maximum delta of 1/255 — sub-perceptual noise no human could see.
+       * maximum delta of 1/255, sub-perceptual noise no human could see.
        *
        * That noise is layout-dependent: it appeared, and then stopped
        * reproducing once the page changed. Which is exactly the argument for
        * not running at 0. A suite that is only stable because of where the
        * elements happen to sit will betray you on an unrelated refactor.
        *
-       * 0.2 is Playwright's own default and does NOT hide real changes — every
+       * 0.2 is Playwright's own default and does NOT hide real changes: every
        * geometry shift in the regression still fails loudly.
        *
        * maxDiffPixels stays at 0 deliberately. Once `threshold` has filtered

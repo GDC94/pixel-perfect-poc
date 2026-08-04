@@ -35,7 +35,7 @@ for (const id of STATES) {
 
 /**
  * Hover is a real visual state and a real source of regressions, but it cannot
- * be captured by rendering markup alone — it has to be driven.
+ * be captured by rendering markup alone. It has to be driven.
  */
 test('btn-default hover state matches baseline', async ({ page }) => {
   const button = page.getByTestId('btn-default');

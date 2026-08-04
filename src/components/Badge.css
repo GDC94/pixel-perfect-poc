@@ -1,5 +1,5 @@
 /*
- * No transitions, no animations — snapshots must be byte-identical.
+ * No transitions, no animations: snapshots must be byte-identical.
  *
  * Badge deliberately consumes NO `--space-4`. It is the control group for the
  * token-regression demo: bumping `--space-4` must leave these snapshots green.

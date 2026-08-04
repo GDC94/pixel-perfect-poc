@@ -63,27 +63,27 @@ export function Gallery() {
 
       <main>
         <ol className="gallery__list">
-          <Specimen name="Button — primary" testId="btn-default">
+          <Specimen name="Button / primary" testId="btn-default">
             <Button>Run visual suite</Button>
           </Specimen>
 
-          <Specimen name="Button — secondary" testId="btn-secondary">
+          <Specimen name="Button / secondary" testId="btn-secondary">
             <Button variant="secondary">Update snapshots</Button>
           </Specimen>
 
-          <Specimen name="Button — disabled" testId="btn-disabled">
+          <Specimen name="Button / disabled" testId="btn-disabled">
             <Button disabled>Run visual suite</Button>
           </Specimen>
 
-          <Specimen name="Badge — success" testId="badge-success">
+          <Specimen name="Badge / success" testId="badge-success">
             <Badge tone="success">Passing</Badge>
           </Specimen>
 
-          <Specimen name="Badge — warn" testId="badge-warn">
+          <Specimen name="Badge / warn" testId="badge-warn">
             <Badge tone="warn">Flaky</Badge>
           </Specimen>
 
-          <Specimen name="Badge — error" testId="badge-error">
+          <Specimen name="Badge / error" testId="badge-error">
             <Badge tone="error">Diff found</Badge>
           </Specimen>
         </ol>

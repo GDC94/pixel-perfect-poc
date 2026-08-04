@@ -3,7 +3,7 @@ import { gotoStable } from './fixtures';
 
 /**
  * Reference for the two tolerance knobs. This file exists to be read, not just
- * to run — a real project tunes these, and tuning them blind is how visual
+ * to run. A real project tunes these, and tuning them blind is how visual
  * suites end up either permanently red or quietly blind.
  *
  * The global config is strict (`threshold: 0, maxDiffPixels: 0`). These
@@ -26,7 +26,7 @@ test('landing tolerates sub-perceptual colour drift', async ({ page }) => {
 
     /*
      * threshold: per-pixel acceptable colour distance in the YIQ colour space,
-     * 0..1. It does NOT mean "0.2 of the image may differ" — it is applied to
+     * 0..1. It does NOT mean "0.2 of the image may differ": it is applied to
      * each pixel independently, and a pixel closer than this to its baseline
      * counterpart is simply not counted as different at all.
      *
@@ -40,7 +40,7 @@ test('landing tolerates sub-perceptual colour drift', async ({ page }) => {
      * maxDiffPixelRatio: of the pixels that DID exceed `threshold`, what share
      * of the total image may they represent before the test fails.
      *
-     * 0.001 on a 1280-wide full-page shot is roughly a thousand pixels — enough
+     * 0.001 on a 1280-wide full-page shot is roughly a thousand pixels, enough
      * to ride out a font-hinting difference, not nearly enough to hide a 2px
      * padding change, which reflows everything below it.
      *

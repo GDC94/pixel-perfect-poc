@@ -6,7 +6,7 @@ node_modules/
 dist/
 dist-ssr/
 
-# Playwright runtime output — never commit these.
+# Playwright runtime output. Never commit these.
 # Baselines live in tests/visual/__screenshots__/ and ARE committed.
 test-results/
 playwright-report/

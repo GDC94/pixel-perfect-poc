@@ -2,7 +2,7 @@
 """
 Rebuild the README's baseline/actual/diff image from a real failing run.
 
-The README's opening image is not a mockup — it is generated from actual
+The README's opening image is not a mockup. It is generated from actual
 Playwright artifacts, so it cannot drift away from what the suite really does.
 
     # 1. cause the documented regression
@@ -17,7 +17,7 @@ of it. Shown whole at README width the signal is invisible and the image reads
 as broken. The crop below is centred on the measured bounding box of changed
 pixels.
 
-Requires Pillow (`pip install pillow`). Docs-only — never runs in CI.
+Requires Pillow (`pip install pillow`). Docs-only: never runs in CI.
 """
 
 from pathlib import Path

@@ -1,5 +1,5 @@
 /*
- * Design tokens — the single source of every visual value in this app.
+ * Design tokens: the single source of every visual value in this app.
  *
  * Components never hardcode a px or a hex. That is what makes the visual
  * regression suite meaningful: changing ONE line here must ripple into the

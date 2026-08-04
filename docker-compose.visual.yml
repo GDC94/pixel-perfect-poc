@@ -1,13 +1,13 @@
 # The authoritative test environment.
 #
 # Baselines are only meaningful relative to the environment that produced them.
-# Pinning that environment here — and reusing the exact same image tag in CI —
+# Pinning that environment here, and reusing the exact same image tag in CI,
 # is what lets a laptop and a GitHub runner agree on a pixel.
 services:
   visual:
     image: mcr.microsoft.com/playwright:v1.62.1-noble
 
-    # No `platform:` pin — the container runs on the host's native architecture.
+    # No `platform:` pin. The container runs on the host's native architecture.
     #
     # This started as an amd64 pin, on the assumption that baselines generated on
     # Apple Silicon would not match an amd64 CI runner. That assumption was
