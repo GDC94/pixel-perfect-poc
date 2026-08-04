@@ -1,0 +1,43 @@
+/* No transitions, no animations — snapshots must be byte-identical. */
+
+.card {
+  width: var(--size-card);
+  padding: var(--space-4);
+  background-color: var(--color-surface);
+  border: var(--border-default);
+  border-radius: var(--radius-lg);
+}
+
+/*
+ * `elevated` drops the hairline border and adds depth. Both differences are
+ * inside the element box (the border) and outside it (the shadow), so the
+ * variant is detectable in an element-clipped snapshot and in the full-page one.
+ */
+.card--elevated {
+  border-color: transparent;
+  box-shadow: var(--shadow-elevated);
+}
+
+.card__rule {
+  display: block;
+  width: var(--size-rule);
+  height: var(--border-width-thick);
+  background-color: var(--color-text);
+}
+
+.card__title {
+  margin-top: var(--space-3);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-snug);
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--color-text);
+}
+
+.card__body {
+  margin-top: var(--space-2);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-muted);
+}

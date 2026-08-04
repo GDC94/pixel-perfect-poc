@@ -1,0 +1,23 @@
+# Force the container onto linux/amd64 regardless of host architecture.
+#
+#   docker compose -f docker-compose.visual.yml -f docker-compose.amd64.yml \
+#     run --rm visual pnpm test:visual
+#
+# Not needed day to day: baselines were measured to be portable between arm64
+# and amd64 (see the README's Findings section), and on Apple Silicon this runs
+# under emulation at roughly 4x the wall clock. Kept for the case where you need
+# to reproduce a CI runner bit for bit.
+services:
+  visual:
+    platform: linux/amd64
+
+    # amd64 needs its own node_modules. esbuild and rollup ship per-architecture
+    # native binaries, so sharing the native volume fails at exec time with an
+    # error that reads like a corrupt install rather than an arch mismatch.
+    volumes:
+      - .:/work
+      - amd64_node_modules:/work/node_modules
+      - pnpm_store:/pnpm/store
+
+volumes:
+  amd64_node_modules:

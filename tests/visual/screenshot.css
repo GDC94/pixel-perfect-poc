@@ -1,0 +1,40 @@
+/*
+ * Injected by Playwright at capture time only (see `stylePath` in
+ * playwright.config.ts). It never ships to users.
+ *
+ * `animations: 'disabled'` already freezes CSS animations, but it does not
+ * cover everything below, and defence in depth is cheap here: a single
+ * unfrozen transition costs an afternoon of chasing a one-pixel diff.
+ */
+
+*,
+*::before,
+*::after {
+  animation-play-state: paused !important;
+  animation-delay: 0s !important;
+  animation-duration: 0s !important;
+  transition-delay: 0s !important;
+  transition-duration: 0s !important;
+}
+
+/* Scrollbar width differs across platforms and steals layout space. */
+html {
+  scrollbar-width: none !important;
+}
+
+::-webkit-scrollbar {
+  display: none !important;
+}
+
+/* Smooth scrolling means a screenshot can land mid-scroll. */
+html {
+  scroll-behavior: auto !important;
+}
+
+/*
+ * Force text cursors off. `caret: 'hide'` handles the focused element; this
+ * covers anything that paints its own caret.
+ */
+* {
+  caret-color: transparent !important;
+}

@@ -1,0 +1,112 @@
+/*
+ * Design tokens — the single source of every visual value in this app.
+ *
+ * Components never hardcode a px or a hex. That is what makes the visual
+ * regression suite meaningful: changing ONE line here must ripple into the
+ * snapshots of exactly the components that consume it, and nothing else.
+ */
+
+:root {
+  /* ---- Spacing scale ---------------------------------------------------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 72px;
+
+  /* ---- Color: surfaces -------------------------------------------------- */
+  --color-canvas: #f6f6f3;
+  --color-surface: #ffffff;
+  --color-surface-sunken: #eeeeea;
+  --color-surface-inverted: #17171b;
+
+  /* ---- Color: text ------------------------------------------------------ */
+  --color-text: #17171b;
+  --color-text-muted: #62626b;
+  --color-text-subtle: #8e8e97;
+  --color-text-inverted: #fbfbf9;
+  --color-text-disabled: #a6a6ad;
+
+  /* ---- Color: lines ----------------------------------------------------- */
+  --color-border: #e0dfda;
+  --color-border-strong: #c9c8c1;
+
+  /* ---- Color: interactive ----------------------------------------------- */
+  --color-action: #17171b;
+  --color-action-hover: #3d3d47;
+  --color-action-text: #fbfbf9;
+  --color-action-quiet: #ffffff;
+  --color-action-quiet-hover: #e7e6e1;
+  --color-action-disabled: #e6e5e0;
+
+  /* ---- Color: tones ----------------------------------------------------- */
+  --color-success-bg: #e2f1e6;
+  --color-success-border: #b3d8bd;
+  --color-success-text: #1f6034;
+
+  --color-warn-bg: #fbeed3;
+  --color-warn-border: #ecd5a1;
+  --color-warn-text: #7a5406;
+
+  --color-error-bg: #fbe6e3;
+  --color-error-border: #edc0b9;
+  --color-error-text: #98291d;
+
+  /* ---- Radius ----------------------------------------------------------- */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 14px;
+  --radius-pill: 999px;
+
+  /* ---- Typography ------------------------------------------------------- */
+  /* Inter is the ONLY family: self-hosted via @fontsource, no CDN, no system
+   * fallback that could differ between the host and the Linux container. */
+  --font-family-base: 'Inter', sans-serif;
+
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-md: 16px;
+  --font-size-lg: 20px;
+  --font-size-xl: 28px;
+  --font-size-2xl: 44px;
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+
+  --line-height-tight: 1.15;
+  --line-height-snug: 1.35;
+  --line-height-relaxed: 1.6;
+
+  --letter-spacing-tight: -0.02em;
+  --letter-spacing-none: 0em;
+  --letter-spacing-wide: 0.09em;
+
+  /* ---- Borders ---------------------------------------------------------- */
+  --border-width: 1px;
+  --border-width-thick: 2px;
+  --border-default: var(--border-width) solid var(--color-border);
+  --border-strong: var(--border-width) solid var(--color-border-strong);
+  --border-error: var(--border-width) solid var(--color-error-text);
+  --border-transparent: var(--border-width) solid transparent;
+
+  /* ---- Elevation -------------------------------------------------------- */
+  --shadow-elevated:
+    0 1px 1px rgb(23 23 27 / 5%),
+    0 10px 24px -6px rgb(23 23 27 / 18%);
+
+  /* ---- Sizing ----------------------------------------------------------- */
+  --size-card: 288px;
+  --size-field: 288px;
+  --size-page: 1120px;
+  --size-measure: 560px;
+  --size-rule: 40px;
+  --size-meta: 220px;
+  /* Integer control heights keep clipped element snapshots free of partial
+   * antialiased rows at the top/bottom edge of the capture. */
+  --size-control: 42px;
+  --size-badge: 26px;
+}

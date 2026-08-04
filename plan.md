@@ -1,6 +1,17 @@
 # Visual Regression POC — Vite + React + Playwright + pnpm
 
-> Build script for this repository. Nothing here has been implemented yet.
+> **Historical document — kept deliberately, and no longer accurate.**
+>
+> This is the plan as written *before* anything was measured. It is preserved because the gap
+> between it and the result is the interesting part. Two of its decisions were overturned by
+> evidence:
+>
+> | Planned | Measured outcome |
+> | --- | --- |
+> | Pin `platform: linux/amd64`, assuming arm64 baselines would not port | Wrong. arm64 passes 15/15 against amd64 baselines. Pin removed, runs got 4× faster. |
+> | `threshold: 0` for maximum strictness | Too strict. Produced a false positive at 1/255 colour delta. Now `threshold: 0.2`. |
+>
+> **See [README.md](README.md) for what was actually built and every measured number.**
 
 ## Context
 

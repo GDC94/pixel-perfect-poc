@@ -1,0 +1,39 @@
+/*
+ * No transitions, no animations — snapshots must be byte-identical.
+ *
+ * Badge deliberately consumes NO `--space-4`. It is the control group for the
+ * token-regression demo: bumping `--space-4` must leave these snapshots green.
+ */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  height: var(--size-badge);
+  padding: var(--space-1) var(--space-3);
+  border: var(--border-transparent);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-snug);
+  letter-spacing: var(--letter-spacing-wide);
+  text-transform: uppercase;
+}
+
+.badge--success {
+  background-color: var(--color-success-bg);
+  border-color: var(--color-success-border);
+  color: var(--color-success-text);
+}
+
+.badge--warn {
+  background-color: var(--color-warn-bg);
+  border-color: var(--color-warn-border);
+  color: var(--color-warn-text);
+}
+
+.badge--error {
+  background-color: var(--color-error-bg);
+  border-color: var(--color-error-border);
+  color: var(--color-error-text);
+}

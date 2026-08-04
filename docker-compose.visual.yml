@@ -1,0 +1,53 @@
+# The authoritative test environment.
+#
+# Baselines are only meaningful relative to the environment that produced them.
+# Pinning that environment here — and reusing the exact same image tag in CI —
+# is what lets a laptop and a GitHub runner agree on a pixel.
+services:
+  visual:
+    image: mcr.microsoft.com/playwright:v1.62.1-noble
+
+    # No `platform:` pin — the container runs on the host's native architecture.
+    #
+    # This started as an amd64 pin, on the assumption that baselines generated on
+    # Apple Silicon would not match an amd64 CI runner. That assumption was
+    # measured and proved WRONG: the identical suite, source and baselines pass
+    # 15/15 across both architectures. See the README's Findings section.
+    #
+    # Dropping the pin removes QEMU emulation on Apple Silicon and takes a run
+    # from ~14s to ~3.6s. Use docker-compose.amd64.yml to force amd64 anyway.
+    working_dir: /work
+    entrypoint: ['/bin/sh', '/work/scripts/docker-entry.sh']
+
+    environment:
+      CI: '1'
+      # Browsers are preinstalled at this path in the image. Setting it stops any
+      # stray `playwright install` from re-downloading ~400MB per run.
+      PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
+      PNPM_HOME: /pnpm
+      # Corepack asks for confirmation before downloading a package manager it
+      # has not seen. There is no TTY here to answer it, so the run would hang.
+      COREPACK_ENABLE_DOWNLOAD_PROMPT: '0'
+
+    volumes:
+      - .:/work
+
+      # A named volume masking node_modules is load-bearing, not an optimisation.
+      # Vite pulls in esbuild and rollup, which ship platform-specific native
+      # binaries. The host's are built for darwin-arm64 and cannot execute in a
+      # linux container, so the bind mount above must not win here.
+      - visual_node_modules:/work/node_modules
+
+      # pnpm's content-addressable store. Without its own volume, every clean run
+      # re-downloads the full dependency tree.
+      - pnpm_store:/pnpm/store
+
+    # Chromium needs more than the default 64MB of shared memory or it will crash
+    # on larger pages, which surfaces as an unhelpful "Target closed".
+    shm_size: '1gb'
+
+    init: true
+
+volumes:
+  visual_node_modules:
+  pnpm_store:

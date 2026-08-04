@@ -1,0 +1,48 @@
+name: Visual regression
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  visual:
+    runs-on: ubuntu-latest
+
+    # The entire thesis of this repository is on this line: CI runs the SAME
+    # image tag that produced the committed baselines locally. Swap this for a
+    # bare ubuntu runner with `npx playwright install` and every snapshot fails,
+    # because the font stack underneath it is different.
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble
+      options: --shm-size=1gb
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable pnpm via corepack
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run visual regression suite
+        # Note the absence of --update-snapshots. CI compares against committed
+        # baselines and is never allowed to write them; a CI job that can rewrite
+        # its own expectations cannot fail.
+        run: pnpm test:visual
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
+
+      - name: Upload diff report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14

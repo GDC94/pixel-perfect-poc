@@ -1,0 +1,103 @@
+@import '../styles/shell.css';
+
+/* No transitions, no animations — snapshots must be byte-identical. */
+
+/* ---- Hero -------------------------------------------------------------- */
+
+.hero {
+  padding-block: var(--space-8) var(--space-7);
+  border-bottom: var(--border-default);
+}
+
+.hero__title {
+  margin-top: var(--space-3);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--color-text);
+}
+
+.hero__lede {
+  max-width: var(--size-measure);
+  margin-top: var(--space-5);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-muted);
+}
+
+.hero__actions {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+/* ---- Sections ---------------------------------------------------------- */
+
+.section {
+  padding-block: var(--space-7);
+  border-bottom: var(--border-default);
+}
+
+.section__title {
+  margin-top: var(--space-2);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-snug);
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--color-text);
+}
+
+.section__head {
+  margin-bottom: var(--space-6);
+}
+
+.cards {
+  display: flex;
+  gap: var(--space-5);
+  align-items: stretch;
+}
+
+/* ---- Status row -------------------------------------------------------- */
+
+.statuses {
+  display: flex;
+  gap: var(--space-5);
+}
+
+.status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  width: var(--size-card);
+  padding: var(--space-4);
+  background-color: var(--color-surface-sunken);
+  border-radius: var(--radius-lg);
+}
+
+.status__label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-snug);
+  color: var(--color-text-muted);
+}
+
+/* ---- Footer ------------------------------------------------------------ */
+
+.footer {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-5);
+  padding-top: var(--space-6);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-subtle);
+}
+
+.footer__note {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}

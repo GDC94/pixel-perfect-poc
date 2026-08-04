@@ -1,0 +1,47 @@
+/* No transitions, no animations — snapshots must be byte-identical. */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--size-control);
+  padding-inline: var(--space-4);
+  border: var(--border-transparent);
+  border-radius: var(--radius-md);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-none);
+  cursor: pointer;
+}
+
+.button--primary {
+  background-color: var(--color-action);
+  border-color: var(--color-action);
+  color: var(--color-action-text);
+}
+
+.button--primary:hover {
+  background-color: var(--color-action-hover);
+  border-color: var(--color-action-hover);
+}
+
+.button--secondary {
+  background-color: var(--color-action-quiet);
+  border-color: var(--color-border-strong);
+  color: var(--color-text);
+}
+
+.button--secondary:hover {
+  background-color: var(--color-action-quiet-hover);
+  border-color: var(--color-text-subtle);
+}
+
+.button:disabled,
+.button:disabled:hover {
+  background-color: var(--color-action-disabled);
+  border-color: var(--color-action-disabled);
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+}
