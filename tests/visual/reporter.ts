@@ -49,7 +49,7 @@ type Failure = { name: string; change: Change };
 /**
  * Report the SNAPSHOT name, not the test title.
  *
- * They drift apart — the test `landing tolerates sub-perceptual colour drift`
+ * They drift apart: the test `landing tolerates sub-perceptual colour drift`
  * writes `landing-tolerant.png`, and `btn-default hover state` writes
  * `btn-hover.png`. The filename is what you go looking for on disk, so that is
  * what belongs in the output.
@@ -125,7 +125,7 @@ export default class VisualReporter implements Reporter {
     const out = console.log;
 
     // Tests finish in whatever order the workers release them. Sorting keeps the
-    // output diffable between runs — which is the same discipline the suite is
+    // output diffable between runs, which is the same discipline the suite is
     // enforcing on the pixels.
     this.failures.sort((a, b) => a.name.localeCompare(b.name));
     this.passes.sort((a, b) => a.localeCompare(b));
@@ -164,7 +164,7 @@ export default class VisualReporter implements Reporter {
 
     if (this.passes.length) {
       out('');
-      out(`  ${paint('green', 'UNCHANGED')}  ${paint('dim', '— these tell you where not to look')}`);
+      out(`  ${paint('green', 'UNCHANGED')}  ${paint('dim', '(these tell you where not to look)')}`);
       out(`    ${paint('dim', this.passes.join(', '))}`);
     }
 
@@ -193,7 +193,7 @@ export default class VisualReporter implements Reporter {
     out(
       paint(
         'dim',
-        '    Always inside the container — macOS baselines do not match Linux CI.',
+        '    Always inside the container. macOS baselines do not match Linux CI.',
       ),
     );
 
