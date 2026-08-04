@@ -14,23 +14,26 @@ This repository is the experiment. Every number below was measured here, not est
 
 ## Change one token, see exactly what moved
 
-`--space-4: 16px → 18px`. One line. The suite localizes the blast radius:
+`--space-4: 16px → 18px`. One line, no component touched. The suite localizes the blast radius:
 
 ![Hero region diff](docs/hero-diff.png)
 
-Red is what changed; ghosted grey is what didn't. The buttons moved. The heading and the
-paragraph did not.
+Red is what changed; ghosted grey is what didn't. The buttons moved. The heading and the paragraph
+did not.
 
-At the component level the report is even blunter — it reports geometry, not pixel counts:
+At the component level the report is blunter still — it reports geometry, not pixel counts:
 
 | Baseline | Actual | Diff |
 | --- | --- | --- |
 | ![](docs/btn-expected.png) | ![](docs/btn-actual.png) | ![](docs/btn-diff.png) |
 | `140 × 43` | `144 × 43` | 2px of padding on each side |
 
-**9 of 15 snapshots failed. 6 passed.** The 6 that passed are the three `Badge` and three `Input`
-states — components that consume no spacing token. That is the point of per-component snapshots:
-the failures point at the cause instead of at the whole page.
+**7 of 10 snapshots failed. 3 passed.**
+
+The three that passed are the `Badge` states. `Button` consumes `--space-4`; `Badge` deliberately
+consumes none, which makes it the control group. **The green half is the useful half** — it tells
+you where *not* to look. That contrast is the entire argument for per-component snapshots, and it
+is why this repo keeps two components instead of one.
 
 ---
 
@@ -40,19 +43,19 @@ Requires Docker. Browsers come from the image; you do not install them locally.
 
 ```bash
 pnpm install
-pnpm test:visual:docker          # run the suite against committed baselines
+pnpm test:visual:docker          # run against committed baselines
 pnpm test:visual:docker:update   # rewrite baselines (the only sanctioned way)
 pnpm test:visual:report          # open the HTML report with expected/actual/diff
 ```
 
-Try it yourself: change `--space-4` in `src/styles/tokens.css`, run the suite, open the report.
+Try it: change `--space-4` in `src/styles/tokens.css`, run the suite, open the report.
 
 ---
 
 ## How determinism is enforced
 
-Every entry here removes one specific source of flakiness. Remove any one of them and the suite
-starts failing on an unchanged tree.
+Every entry removes one specific source of flakiness. Remove any one and the suite starts failing
+on an unchanged tree.
 
 | Source of drift | Countermeasure |
 | --- | --- |
@@ -66,6 +69,11 @@ starts failing on an unchanged tree.
 | **Stale server** | `reuseExistingServer: false` — see Findings, this one bit us |
 | **Host OS** | Everything runs in `mcr.microsoft.com/playwright:v1.62.1-noble`, and CI uses the same image tag |
 
+The UI cooperates by construction: components are pure props-in-markup-out, with no state, no
+effects, no dates, no randomness, and every visual value resolving through a token in
+`src/styles/tokens.css`. That token file has zero unreferenced entries — which is what makes a
+one-line change a meaningful experiment.
+
 ---
 
 ## Findings
@@ -77,100 +85,116 @@ This was the open question the repo existed to answer, and the intuitive guess w
 Running the suite **natively on macOS** against baselines generated in the Linux container, with
 byte-identical source:
 
-| Snapshot | Baseline (Linux) | macOS | |
-| --- | --- | --- | --- |
-| `btn-default` | `140 × 43` | `139 × 43` | 1px narrower |
-| `landing-full` | `1280 × 1315` | `1280 × 1338` | 23px taller |
-| `landing-hero` | — | 8,941 differing pixels | |
-| **Total** | | **15 of 15 failed** | |
+| Snapshot | Baseline (Linux) | macOS |
+| --- | --- | --- |
+| `btn-default` | `140 × 43` | `139 × 43` — 1px narrower |
+| `landing-full` | — | 21,144 differing pixels |
+| `landing-hero` | — | 8,941 differing pixels |
+| **Total** | | **10 of 10 failed** |
 
-Running the same baselines under **`linux/arm64` instead of `linux/amd64`**:
+Running the same baselines under **`linux/amd64` instead of the native `linux/arm64`** — which is
+exactly what CI does:
 
-> **15 of 15 passed.**
+> **10 of 10 passed.**
 
-So the amd64 pin this project started with was unnecessary. Removing it dropped QEMU emulation on
-Apple Silicon and took a full run from **~14s to 3.4s** — a 4× speedup for free.
-`docker-compose.amd64.yml` remains if you ever need to reproduce a CI runner bit for bit.
+So the amd64 pin this project started with was unnecessary. Removing it dropped QEMU emulation and
+took a run from **12.7s to 3.4s**. `docker-compose.amd64.yml` remains if you ever need to reproduce
+a CI runner bit for bit.
 
-**Why this matters:** the deliberate 2px regression moved the landing page by **31px**. The
-macOS-vs-Linux platform difference moves it by **23px**. Same order of magnitude. Generate
-baselines on your laptop and run CI on Linux, and you cannot tell a real regression from an
-operating system. That is the entire argument for containerising this, expressed as a number
-instead of an opinion.
+**Why this matters.** Look at `btn-default` at 140×43:
 
-### 2. `threshold: 0` is too strict, and the control group proved it
+- The deliberate 2px regression makes it **144px** wide.
+- Simply running on macOS makes it **139px** wide.
 
-The suite started at `threshold: 0, maxDiffPixels: 0` on the principle that starting loose hides
-the instability you are trying to measure. That principle was right; the value was not.
+Both are geometry changes to the same element, in the same ballpark, and nothing in the output
+distinguishes them. Generate baselines on your laptop and run CI on Linux and you cannot tell a
+real bug from an operating system. That is the entire argument for containerising this, expressed
+as a number rather than an opinion.
 
-`Badge` deliberately consumes no spacing token — it is the control group. On the token change it
-should have stayed green. It failed: **18 differing pixels at a maximum delta of 1/255.** An
-independent re-measurement found 36 pixels at 2/255. Either way it is sub-perceptual rasterization
-noise that no human could see.
+### 2. Do not run at `threshold: 0` — even when it looks safe
 
-Final configuration, and the reasoning for each half:
+On the current surface, `threshold: 0` and `threshold: 0.2` produce **identical** results: 7 failed,
+3 passed. So strictness costs nothing here, and you could be forgiven for setting it to zero.
+
+Don't. On an earlier, larger version of this page, `threshold: 0` produced a **false positive**:
+`Badge` — which consumes no spacing token and should have been immune — went red with 18 differing
+pixels at a maximum delta of **1/255**. Sub-perceptual rasterization noise, invisible to a human,
+and enough to fail a build.
+
+That noise appeared and then stopped reproducing when the layout changed. **It is a property of
+where elements happen to sit, not of your code.** A suite that is green only because of the current
+layout will betray you on an unrelated refactor.
 
 ```ts
 threshold: 0.2,      // per-pixel YIQ colour distance — absorbs raster noise
 maxDiffPixels: 0,    // ...but zero tolerance for pixels that clear that bar
 ```
 
-`threshold: 0.2` is Playwright's own default. It does **not** hide real changes: every geometry
-shift in the regression still failed loudly. Loosening *both* knobs at once is how suites go blind.
+`0.2` is Playwright's own default and hides nothing real: every geometry shift in the regression
+still failed loudly. Loosening *both* knobs at once is how suites go blind.
 
 ### 3. `reuseExistingServer` is a trap for visual tests
 
 `reuseExistingServer: !process.env.CI` is the standard Playwright idiom and it produced a phantom
-failure here. A `vite preview` process left running from an earlier run kept serving a stale
-bundle, so a later run compared fresh baselines against old CSS and reported 15/15 failures that
-had nothing to do with the code under test.
+failure here. A `vite preview` left running from an earlier run kept serving a stale bundle, so a
+later run compared fresh baselines against old CSS and reported 10/10 failures that had nothing to
+do with the code under test. The first macOS measurement above was contaminated by exactly this and
+had to be thrown out and redone.
 
 For a functional test, reusing a warm server is a harmless speedup. For a visual test it silently
 compares against whatever bytes that server happens to be holding. The config now always rebuilds.
 
 The tell: a delta that suspiciously equals a change you made earlier.
 
-### 4. Per-component snapshots earn their keep
+### 4. Mask before you loosen tolerance
+
+The landing page carries a timestamp. It is handled with `mask`, not with a raised threshold, and
+the ordering is deliberate: tolerance is **global to an assertion**, so raising it to survive one
+noisy region blinds every other pixel in the same screenshot. Masking is surgical.
+
+### 5. Two snapshot strategies, and neither replaces the other
 
 | Strategy | Catches | Costs |
 | --- | --- | --- |
-| Per-component (11 baselines) | The specific component that drifted | More files to review |
-| Full-page (1 baseline) | Spacing *between* components, stacking, layout | One change reddens everything |
+| Per-component (7 baselines) | Which specific component drifted | More files to review |
+| Full-page (3 baselines) | Spacing *between* components, stacking, layout | One change reddens everything |
 
-Neither replaces the other. The regression demonstrated it precisely: 6 component snapshots stayed
-green and told you where *not* to look, while the full-page snapshot confirmed the cumulative
-effect was 31px of drift.
+The regression showed it precisely: three component snapshots stayed green and told you where not
+to look, while the full-page snapshot confirmed the cumulative effect.
 
 ---
 
 ## Layout
 
 ```
-src/components/      Button, Card, Badge, Input — pure props, no state, no dates
-src/routes/          Gallery (11 isolated states) + Landing (composed page)
-src/styles/tokens.css  every visual value; the regression lever
+src/styles/tokens.css     every visual value; the regression lever
+src/components/           Button (consumes --space-4) and Badge (the control group)
+src/routes/Gallery        6 isolated states, one data-testid each
+src/routes/Landing        the same components, composed
 tests/visual/
-  components.spec.ts   per-component, per-state, plus a driven hover state
-  landing.spec.ts      full page with a masked timestamp + a clipped region
-  tolerance.spec.ts    documents what threshold and maxDiffPixelRatio actually do
-  __screenshots__/     committed baselines
-docker-compose.visual.yml   the authoritative environment
-.github/workflows/visual.yml  same image tag — that identity is the whole thesis
+  components.spec.ts        per-component, per-state, plus a driven hover state
+  landing.spec.ts           full page with a masked timestamp + a clipped region
+  tolerance.spec.ts         documents what threshold and maxDiffPixelRatio do
+  screenshot.css            injected at capture time only
+  __screenshots__/          the 10 committed baselines
+docker-compose.visual.yml       the authoritative environment
+docker-compose.amd64.yml        opt-in override to force amd64
+.github/workflows/visual.yml    same image tag — that identity is the whole thesis
 ```
 
 ---
 
 ## Honest limits
 
-- **Baselines are binary blobs in git.** Fine at 15 snapshots. At a few hundred, across several
-  viewports and themes, repository size becomes a real problem — and that is the point where
-  hosted services (Chromatic, Percy) start earning their cost. They solve baseline storage and
-  team approval workflow, not comparison; Playwright already does the comparison well.
+- **Baselines are binary blobs in git.** Fine at 10 snapshots. At a few hundred, across several
+  viewports and themes, repository size becomes a real problem — and that is where hosted services
+  (Chromatic, Percy) start earning their cost. They solve baseline storage and team approval
+  workflow, not comparison; Playwright already does the comparison well.
 - **One browser, one viewport.** Adding Firefox, WebKit, or a mobile viewport multiplies the
   baseline count by the number of combinations, not adds to it.
 - **This is a POC.** It proves the mechanism and quantifies the constraints. It does not address
-  review workflow, which is the thing that actually decides whether a visual suite survives
-  contact with a team.
+  review workflow, which is what actually decides whether a visual suite survives contact with a
+  team.
 
 ## License
 

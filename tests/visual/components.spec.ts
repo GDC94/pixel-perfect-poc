@@ -5,9 +5,10 @@ import { gotoStable } from './fixtures';
  * Component-level snapshots.
  *
  * This is the strategy that scales. A full-page snapshot answers "did anything
- * change?"; these answer "what changed?". Move the Button's padding and exactly
- * the Button snapshots go red — Badge and Input stay green, so the diff points
- * at the cause instead of at the whole page.
+ * change?"; these answer "what changed?". Button consumes the `--space-4` token
+ * and Badge deliberately consumes none, so changing that one token turns the
+ * Button snapshots red while Badge stays green. The green half is the useful
+ * half: it tells you where NOT to look.
  *
  * Each screenshot targets a locator, not the page, so unrelated layout shifts
  * elsewhere on the route cannot touch these baselines.
@@ -17,14 +18,9 @@ const STATES = [
   'btn-default',
   'btn-secondary',
   'btn-disabled',
-  'card-default',
-  'card-elevated',
   'badge-success',
   'badge-warn',
   'badge-error',
-  'input-empty',
-  'input-filled',
-  'input-error',
 ] as const;
 
 test.beforeEach(async ({ page }) => {

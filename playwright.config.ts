@@ -39,19 +39,24 @@ export default defineConfig({
        * threshold      — per-pixel colour distance in the YIQ space, 0..1.
        * maxDiffPixels  — how many pixels may exceed `threshold` before failing.
        *
-       * These values are measured, not guessed. The suite first ran at
-       * threshold: 0, which produced a false positive: the Badge component
-       * consumes no spacing token, yet an unrelated token change reddened
-       * `badge-success` with 18 differing pixels at a maximum delta of 1/255 —
-       * sub-perceptual rasterization noise, invisible to any human.
+       * On the current two-component surface, threshold 0 and threshold 0.2
+       * produce identical results, so this setting buys nothing today. It is
+       * here because of what happened on an earlier, larger layout: `Badge`
+       * consumes no spacing token and should have been immune to a spacing
+       * change, yet at threshold 0 it went red with 18 differing pixels at a
+       * maximum delta of 1/255 — sub-perceptual noise no human could see.
        *
-       * threshold: 0.2 (Playwright's own default) absorbs that noise. It does
-       * NOT absorb real regressions: the same token change still moved buttons
-       * by 4px and the landing page by 30px, and those all failed loudly.
+       * That noise is layout-dependent: it appeared, and then stopped
+       * reproducing once the page changed. Which is exactly the argument for
+       * not running at 0. A suite that is only stable because of where the
+       * elements happen to sit will betray you on an unrelated refactor.
+       *
+       * 0.2 is Playwright's own default and does NOT hide real changes — every
+       * geometry shift in the regression still fails loudly.
        *
        * maxDiffPixels stays at 0 deliberately. Once `threshold` has filtered
-       * out noise, any pixel that still differs is a genuine visual change and
-       * should fail. Loosening both knobs at once is how suites go blind.
+       * out noise, any pixel that still differs is a genuine visual change.
+       * Loosening both knobs at once is how suites go blind.
        */
       threshold: 0.2,
       maxDiffPixels: 0,

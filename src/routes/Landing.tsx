@@ -1,6 +1,5 @@
 import { Badge } from '../components/Badge';
 import { Button } from '../components/Button';
-import { Card } from '../components/Card';
 import './Landing.css';
 
 /**
@@ -54,21 +53,41 @@ export function Landing() {
             <p className="eyebrow">How it holds still</p>
             <h2 className="section__title">Three rules, no exceptions</h2>
           </div>
-          <div className="cards">
-            <Card
-              elevated
-              title="Tokens are the only lever"
-              body="No component hardcodes a colour or a spacing value. Every pixel traces back to one custom property, so a regression has exactly one cause."
-            />
-            <Card
-              title="Nothing animates"
-              body="No transitions, no keyframes, no easing. A screenshot taken at any moment is the same screenshot, which removes the usual source of flake."
-            />
-            <Card
-              title="Time is masked, not faked"
-              body="One deliberate timestamp lives in the footer. The suite masks it instead of freezing the clock — the honest escape hatch for real dynamic data."
-            />
-          </div>
+          <ol className="features">
+            <li className="feature">
+              <p className="feature__index">01</p>
+              <div>
+                <h3 className="feature__title">Tokens are the only lever</h3>
+                <p className="feature__body">
+                  No component hardcodes a colour or a spacing value. Every pixel
+                  traces back to one custom property, so a regression has exactly one
+                  cause.
+                </p>
+              </div>
+            </li>
+            <li className="feature">
+              <p className="feature__index">02</p>
+              <div>
+                <h3 className="feature__title">Nothing animates</h3>
+                <p className="feature__body">
+                  No transitions, no keyframes, no easing. A screenshot taken at any
+                  moment is the same screenshot, which removes the usual source of
+                  flake.
+                </p>
+              </div>
+            </li>
+            <li className="feature">
+              <p className="feature__index">03</p>
+              <div>
+                <h3 className="feature__title">Time is masked, not faked</h3>
+                <p className="feature__body">
+                  One deliberate timestamp lives in the footer. The suite masks it
+                  instead of freezing the clock — the honest escape hatch for real
+                  dynamic data.
+                </p>
+              </div>
+            </li>
+          </ol>
         </section>
 
         <section className="section">
@@ -79,7 +98,7 @@ export function Landing() {
           <div className="statuses">
             <div className="status">
               <Badge tone="success">Passing</Badge>
-              <p className="status__label">12 component baselines</p>
+              <p className="status__label">7 component baselines</p>
             </div>
             <div className="status">
               <Badge tone="warn">Flaky</Badge>

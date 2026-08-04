@@ -1,8 +1,6 @@
 import type { ReactNode } from 'react';
 import { Badge } from '../components/Badge';
 import { Button } from '../components/Button';
-import { Card } from '../components/Card';
-import { Input } from '../components/Input';
 import './Gallery.css';
 
 type SpecimenProps = {
@@ -57,7 +55,7 @@ export function Gallery() {
         <p className="eyebrow">Snapshot surface</p>
         <h1 className="gallery__title">Component gallery</h1>
         <p className="gallery__lede">
-          Eleven isolated states, one baseline each. Every state is driven purely by
+          Six isolated states, one baseline each. Every state is driven purely by
           props and every value below resolves from a design token, so a single token
           edit is enough to turn this page red.
         </p>
@@ -77,21 +75,6 @@ export function Gallery() {
             <Button disabled>Run visual suite</Button>
           </Specimen>
 
-          <Specimen name="Card — flat" testId="card-default">
-            <Card
-              title="Deterministic by default"
-              body="No clocks, no randomness, no animation. The same tree renders the same pixels on every run."
-            />
-          </Specimen>
-
-          <Specimen name="Card — elevated" testId="card-elevated">
-            <Card
-              elevated
-              title="Elevated surface"
-              body="The elevated variant trades its hairline border for depth, so the diff is visible either way."
-            />
-          </Specimen>
-
           <Specimen name="Badge — success" testId="badge-success">
             <Badge tone="success">Passing</Badge>
           </Specimen>
@@ -103,29 +86,13 @@ export function Gallery() {
           <Specimen name="Badge — error" testId="badge-error">
             <Badge tone="error">Diff found</Badge>
           </Specimen>
-
-          <Specimen name="Input — empty" testId="input-empty">
-            <Input label="Baseline tag" placeholder="e.g. chromium-linux" />
-          </Specimen>
-
-          <Specimen name="Input — filled" testId="input-filled">
-            <Input label="Baseline tag" value="chromium-linux" />
-          </Specimen>
-
-          <Specimen name="Input — error" testId="input-error">
-            <Input
-              label="Baseline tag"
-              value="chromium-darwin"
-              error="Baselines must be generated inside the container."
-            />
-          </Specimen>
         </ol>
       </main>
 
       <footer className="gallery__footer">
         <p className="gallery__footnote">
           The hover state of <span className="mono">btn-default</span> is captured in a
-          twelfth baseline, driven by <span className="mono">locator.hover()</span>
+          seventh baseline, driven by <span className="mono">locator.hover()</span>
         </p>
       </footer>
     </div>

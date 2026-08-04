@@ -19,15 +19,12 @@
 
   /* ---- Color: surfaces -------------------------------------------------- */
   --color-canvas: #f6f6f3;
-  --color-surface: #ffffff;
   --color-surface-sunken: #eeeeea;
-  --color-surface-inverted: #17171b;
 
   /* ---- Color: text ------------------------------------------------------ */
   --color-text: #17171b;
   --color-text-muted: #62626b;
   --color-text-subtle: #8e8e97;
-  --color-text-inverted: #fbfbf9;
   --color-text-disabled: #a6a6ad;
 
   /* ---- Color: lines ----------------------------------------------------- */
@@ -87,20 +84,11 @@
 
   /* ---- Borders ---------------------------------------------------------- */
   --border-width: 1px;
-  --border-width-thick: 2px;
   --border-default: var(--border-width) solid var(--color-border);
-  --border-strong: var(--border-width) solid var(--color-border-strong);
-  --border-error: var(--border-width) solid var(--color-error-text);
   --border-transparent: var(--border-width) solid transparent;
-
-  /* ---- Elevation -------------------------------------------------------- */
-  --shadow-elevated:
-    0 1px 1px rgb(23 23 27 / 5%),
-    0 10px 24px -6px rgb(23 23 27 / 18%);
 
   /* ---- Sizing ----------------------------------------------------------- */
   --size-card: 288px;
-  --size-field: 288px;
   --size-page: 1120px;
   --size-measure: 560px;
   --size-rule: 40px;
