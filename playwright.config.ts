@@ -25,7 +25,16 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: 0, // A retried visual test is a lie: flakiness is the signal we want.
-  reporter: [['html', { open: 'never' }], ['list']],
+  /*
+   * `dot` for per-test progress, `html` for the diff triptych, and a custom
+   * reporter that interprets the result instead of just counting it — see
+   * tests/visual/reporter.ts for why a visual suite needs that.
+   */
+  reporter: [
+    ['dot'],
+    ['html', { open: 'never' }],
+    ['./tests/visual/reporter.ts'],
+  ],
 
   use: {
     baseURL: 'http://localhost:4173',

@@ -152,7 +152,41 @@ The landing page carries a timestamp. It is handled with `mask`, not with a rais
 the ordering is deliberate: tolerance is **global to an assertion**, so raising it to survive one
 noisy region blinds every other pixel in the same screenshot. Masking is surgical.
 
-### 5. Two snapshot strategies, and neither replaces the other
+### 5. The console output is part of the design
+
+The default reporter answers "how many failed?". For a visual suite that is the least useful
+question, so `tests/visual/reporter.ts` answers the ones that matter instead:
+
+```
+  VISUAL DIFFERENCES FOUND   7 changed · 3 unchanged
+
+  CHANGED
+    btn-default          140×43 → 144×43    shape changed
+    btn-disabled         140×43 → 144×43    shape changed
+    btn-hover            140×43 → 144×43    shape changed
+    btn-secondary        157×43 → 161×43    shape changed
+    landing-full      1280×1518 → 1280×1522 shape changed
+    landing-hero          1,227 px  1.0% of the image
+    landing-tolerant  1280×1518 → 1280×1522 shape changed
+
+  UNCHANGED  — these tell you where not to look
+    badge-error, badge-success, badge-warn
+```
+
+Three deliberate choices in there:
+
+- **"shape changed" vs a pixel count.** A geometry delta means a layout shift; a pixel count with
+  identical dimensions means colour or text rendering. Different bugs, different places to look.
+- **The UNCHANGED list is printed on failure.** Knowing what did *not* move is half the diagnosis,
+  and no default reporter shows it.
+- **The failure output names the update command and the condition for using it.** The reflex on a
+  red visual suite is to re-record and move on, which quietly promotes a bug to the expected
+  result. The message says to look at the diff first, and to only ever update inside the container.
+
+Names come from the snapshot file, not the test title — they drift apart, and the filename is what
+you go looking for on disk. Results are sorted so the output is diffable between runs.
+
+### 6. Two snapshot strategies, and neither replaces the other
 
 | Strategy | Catches | Costs |
 | --- | --- | --- |
@@ -176,6 +210,7 @@ tests/visual/
   landing.spec.ts           full page with a masked timestamp + a clipped region
   tolerance.spec.ts         documents what threshold and maxDiffPixelRatio do
   screenshot.css            injected at capture time only
+  reporter.ts               console output built for reading diffs (see below)
   __screenshots__/          the 10 committed baselines
 docker-compose.visual.yml       the authoritative environment
 docker-compose.amd64.yml        opt-in override to force amd64
