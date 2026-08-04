@@ -5,9 +5,10 @@ from a laptop to CI.
 
 Change one design token, and the suite tells you exactly which components moved — and which didn't.
 
-![Hero region diff](docs/hero-diff.png)
+![Baseline, actual and diff for the same buttons after a 2px token change](docs/diff-triptych.png)
 
-*Red changed. Ghosted grey didn't. The buttons moved; the heading and paragraph did not.*
+*One token moved. The buttons grew 4px; every changed pixel is marked in red.
+Nothing else on the page moved — and the suite says so explicitly.*
 
 ---
 
