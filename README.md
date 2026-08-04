@@ -1,161 +1,71 @@
 # pixel-perfect-poc
 
-Pixel-level visual regression testing with **Playwright + Vite + React**, where the baselines
-actually survive the trip from a laptop to CI.
+Visual regression testing with **Playwright + Vite + React**, with baselines that survive the trip
+from a laptop to CI.
 
-The assertion is the easy part — Playwright ships native pixel comparison. The hard part is
-**render determinism**: a screenshot baseline is a function of the OS, the CPU architecture, the
-font rasterizer, animation timing, and your data. Get any of those wrong and you end up with a
-suite that is either permanently red or quietly blind.
-
-This repository is the experiment. Every number below was measured here, not estimated.
-
----
-
-## Change one token, see exactly what moved
-
-`--space-4: 16px → 18px`. One line, no component touched. The suite localizes the blast radius:
+Change one design token, and the suite tells you exactly which components moved — and which didn't.
 
 ![Hero region diff](docs/hero-diff.png)
 
-Red is what changed; ghosted grey is what didn't. The buttons moved. The heading and the paragraph
-did not.
-
-At the component level the report is blunter still — it reports geometry, not pixel counts:
-
-| Baseline | Actual | Diff |
-| --- | --- | --- |
-| ![](docs/btn-expected.png) | ![](docs/btn-actual.png) | ![](docs/btn-diff.png) |
-| `140 × 43` | `144 × 43` | 2px of padding on each side |
-
-**7 of 10 snapshots failed. 3 passed.**
-
-The three that passed are the `Badge` states. `Button` consumes `--space-4`; `Badge` deliberately
-consumes none, which makes it the control group. **The green half is the useful half** — it tells
-you where *not* to look. That contrast is the entire argument for per-component snapshots, and it
-is why this repo keeps two components instead of one.
+*Red changed. Ghosted grey didn't. The buttons moved; the heading and paragraph did not.*
 
 ---
 
-## Quick start
+## What this is — and what it is not
 
-Requires Docker. Browsers come from the image; you do not install them locally.
+**This is a lock, not a design review.**
+
+The baseline is a photo of *what you built*, taken by you. Nothing here knows what your Figma says.
+So the order matters:
+
+```
+1. You build the component
+2. YOU compare it against the Figma — by eye        ← design fidelity is checked here
+3. Only then do you record the baseline             ← this freezes it
+```
+
+If you record before checking, you have locked in the bug and the suite will defend it forever.
+
+| | |
+| --- | --- |
+| ✅ **What it answers** | "Did my change move something I didn't intend to move?" |
+| ❌ **What it does NOT answer** | "Does this match the Figma?" |
+| ❌ **Nor** | "Does it look the same on Mac, Linux and Windows?" (measured here: it does **not** — see Findings) |
+
+If you need automated comparison **against Figma**, that is a different category of tool — see
+[Comparing against Figma](#comparing-against-figma) below.
+
+---
+
+## Try it in 4 steps
+
+Requires Docker running. Browsers come from the image — you do not install them locally.
+
+**1. Install and check it's green**
 
 ```bash
 pnpm install
-pnpm test:visual:docker          # run against committed baselines
-pnpm test:visual:docker:update   # rewrite baselines (the only sanctioned way)
-pnpm test:visual:report          # open the HTML report with expected/actual/diff
+pnpm test:visual:docker
 ```
 
-Try it: change `--space-4` in `src/styles/tokens.css`, run the suite, open the report.
-
----
-
-## How determinism is enforced
-
-Every entry removes one specific source of flakiness. Remove any one and the suite starts failing
-on an unchanged tree.
-
-| Source of drift | Countermeasure |
-| --- | --- |
-| Font loading race | Self-hosted `@fontsource/inter`, never a CDN, plus a `document.fonts.ready` await before every capture (`tests/visual/fixtures.ts`) |
-| Animations & transitions | `animations: 'disabled'` plus a belt-and-braces `screenshot.css` injected only at capture time |
-| Text caret blink | `caret: 'hide'` and `caret-color: transparent` |
-| Scrollbar width | Hidden in `screenshot.css` — it differs across platforms and steals layout space |
-| Device pixel ratio | Fixed `1280×720` viewport, `deviceScaleFactor: 1`, `scale: 'css'` |
-| Dynamic content | The landing page carries a timestamp, masked via `mask: [...]` — the escape hatch every real project needs |
-| Dev-server variance | Tests run against `build` + `preview`, never the dev server with its HMR client |
-| **Stale server** | `reuseExistingServer: false` — see Findings, this one bit us |
-| **Host OS** | Everything runs in `mcr.microsoft.com/playwright:v1.62.1-noble`, and CI uses the same image tag |
-
-The UI cooperates by construction: components are pure props-in-markup-out, with no state, no
-effects, no dates, no randomness, and every visual value resolving through a token in
-`src/styles/tokens.css`. That token file has zero unreferenced entries — which is what makes a
-one-line change a meaningful experiment.
-
----
-
-## Findings
-
-### 1. The OS is the pinning axis. The CPU architecture is not.
-
-This was the open question the repo existed to answer, and the intuitive guess was wrong.
-
-Running the suite **natively on macOS** against baselines generated in the Linux container, with
-byte-identical source:
-
-| Snapshot | Baseline (Linux) | macOS |
-| --- | --- | --- |
-| `btn-default` | `140 × 43` | `139 × 43` — 1px narrower |
-| `landing-full` | — | 21,144 differing pixels |
-| `landing-hero` | — | 8,941 differing pixels |
-| **Total** | | **10 of 10 failed** |
-
-Running the same baselines under **`linux/amd64` instead of the native `linux/arm64`** — which is
-exactly what CI does:
-
-> **10 of 10 passed.**
-
-So the amd64 pin this project started with was unnecessary. Removing it dropped QEMU emulation and
-took a run from **12.7s to 3.4s**. `docker-compose.amd64.yml` remains if you ever need to reproduce
-a CI runner bit for bit.
-
-**Why this matters.** Look at `btn-default` at 140×43:
-
-- The deliberate 2px regression makes it **144px** wide.
-- Simply running on macOS makes it **139px** wide.
-
-Both are geometry changes to the same element, in the same ballpark, and nothing in the output
-distinguishes them. Generate baselines on your laptop and run CI on Linux and you cannot tell a
-real bug from an operating system. That is the entire argument for containerising this, expressed
-as a number rather than an opinion.
-
-### 2. Do not run at `threshold: 0` — even when it looks safe
-
-On the current surface, `threshold: 0` and `threshold: 0.2` produce **identical** results: 7 failed,
-3 passed. So strictness costs nothing here, and you could be forgiven for setting it to zero.
-
-Don't. On an earlier, larger version of this page, `threshold: 0` produced a **false positive**:
-`Badge` — which consumes no spacing token and should have been immune — went red with 18 differing
-pixels at a maximum delta of **1/255**. Sub-perceptual rasterization noise, invisible to a human,
-and enough to fail a build.
-
-That noise appeared and then stopped reproducing when the layout changed. **It is a property of
-where elements happen to sit, not of your code.** A suite that is green only because of the current
-layout will betray you on an unrelated refactor.
-
-```ts
-threshold: 0.2,      // per-pixel YIQ colour distance — absorbs raster noise
-maxDiffPixels: 0,    // ...but zero tolerance for pixels that clear that bar
+```
+  VISUAL SUITE PASSED   10/10 snapshots match their baselines
 ```
 
-`0.2` is Playwright's own default and hides nothing real: every geometry shift in the regression
-still failed loudly. Loosening *both* knobs at once is how suites go blind.
+**2. Break something on purpose**
 
-### 3. `reuseExistingServer` is a trap for visual tests
+In `src/styles/tokens.css`, change one line. Touch no component:
 
-`reuseExistingServer: !process.env.CI` is the standard Playwright idiom and it produced a phantom
-failure here. A `vite preview` left running from an earlier run kept serving a stale bundle, so a
-later run compared fresh baselines against old CSS and reported 10/10 failures that had nothing to
-do with the code under test. The first macOS measurement above was contaminated by exactly this and
-had to be thrown out and redone.
+```diff
+- --space-4: 16px;
++ --space-4: 18px;
+```
 
-For a functional test, reusing a warm server is a harmless speedup. For a visual test it silently
-compares against whatever bytes that server happens to be holding. The config now always rebuilds.
+**3. Run again**
 
-The tell: a delta that suspiciously equals a change you made earlier.
-
-### 4. Mask before you loosen tolerance
-
-The landing page carries a timestamp. It is handled with `mask`, not with a raised threshold, and
-the ordering is deliberate: tolerance is **global to an assertion**, so raising it to survive one
-noisy region blinds every other pixel in the same screenshot. Masking is surgical.
-
-### 5. The console output is part of the design
-
-The default reporter answers "how many failed?". For a visual suite that is the least useful
-question, so `tests/visual/reporter.ts` answers the ones that matter instead:
+```bash
+pnpm test:visual:docker
+```
 
 ```
   VISUAL DIFFERENCES FOUND   7 changed · 3 unchanged
@@ -173,63 +83,128 @@ question, so `tests/visual/reporter.ts` answers the ones that matter instead:
     badge-error, badge-success, badge-warn
 ```
 
-Three deliberate choices in there:
+**Badge stays green.** It consumes no spacing token, so it is the control group. That contrast —
+not the red — is the point: the suite tells you *where the change landed*.
 
-- **"shape changed" vs a pixel count.** A geometry delta means a layout shift; a pixel count with
-  identical dimensions means colour or text rendering. Different bugs, different places to look.
-- **The UNCHANGED list is printed on failure.** Knowing what did *not* move is half the diagnosis,
-  and no default reporter shows it.
-- **The failure output names the update command and the condition for using it.** The reflex on a
-  red visual suite is to re-record and move on, which quietly promotes a bug to the expected
-  result. The message says to look at the diff first, and to only ever update inside the container.
+**4. Look at the diffs, then undo**
 
-Names come from the snapshot file, not the test title — they drift apart, and the filename is what
-you go looking for on disk. Results are sorted so the output is diffable between runs.
+```bash
+pnpm test:visual:report        # expected / actual / diff, side by side
+git checkout src/styles/tokens.css
+```
 
-### 6. Two snapshot strategies, and neither replaces the other
+---
 
-| Strategy | Catches | Costs |
-| --- | --- | --- |
-| Per-component (7 baselines) | Which specific component drifted | More files to review |
-| Full-page (3 baselines) | Spacing *between* components, stacking, layout | One change reddens everything |
+## Why Docker
 
-The regression showed it precisely: three component snapshots stayed green and told you where not
-to look, while the full-page snapshot confirmed the cumulative effect.
+A screenshot is not "how your component looks". It is **how your component looks rendered by that
+browser, on that OS, with that font engine.**
+
+Measured here: the same code, same baselines, run natively on macOS instead of in the Linux
+container → **10 of 10 failed**. A button went from 140px to 139px wide.
+
+So Docker is not infrastructure — it is a **calibrated measuring instrument**. You pick one
+environment, record there, and always compare there. CI uses the same image tag, which is the
+only reason a baseline recorded on your laptop means anything on a runner.
+
+**The one rule:** record baselines inside the container. Always.
+
+```bash
+pnpm test:visual:docker:update   # ✅
+pnpm test:visual:update          # ❌ uses your host OS
+```
+
+---
+
+## Findings
+
+All measured in this repo, not estimated.
+
+| Question | Answer |
+| --- | --- |
+| Do baselines survive a different **OS**? | **No.** macOS vs Linux container: 10/10 failed. `btn-default` 140×43 → 139×43. |
+| Do they survive a different **CPU architecture**? | **Yes.** arm64 vs amd64: 10/10 passed. Dropping the amd64 pin took a run from 12.7s → 3.4s. |
+| Is `threshold: 0` safe? | **No.** On an earlier layout it produced a false positive at **1/255** colour delta — sub-perceptual noise, red build. The noise is layout-dependent, so it can appear on an unrelated refactor. Settled on `threshold: 0.2, maxDiffPixels: 0`. |
+| Is `reuseExistingServer` safe? | **No.** A stale `vite preview` served an old bundle and produced a phantom 10/10 failure. Now always rebuilds. |
+
+**The number that justifies the whole setup.** On the same element, baseline 140px wide:
+
+- The deliberate 2px regression → **144px**
+- Merely running on macOS → **139px**
+
+Two geometry changes of similar size, indistinguishable in the output. Record baselines on your
+laptop and run CI on Linux, and you cannot tell a real bug from an operating system.
+
+---
+
+## How determinism is enforced
+
+Remove any one of these and the suite starts failing on unchanged code.
+
+| Source of drift | Countermeasure |
+| --- | --- |
+| Font loading race | Self-hosted `@fontsource/inter`, plus a `document.fonts.ready` await before every capture |
+| Animations & transitions | `animations: 'disabled'` plus `screenshot.css`, injected only at capture time |
+| Caret, scrollbars | `caret: 'hide'`; scrollbar width hidden (it differs across platforms) |
+| Pixel ratio | Fixed `1280×720`, `deviceScaleFactor: 1`, `scale: 'css'` |
+| Dynamic content | The footer timestamp is `mask`ed — mask *before* you loosen tolerance, since tolerance is global to an assertion |
+| Dev-server variance | Runs against `build` + `preview`, never the dev server |
+| Host OS | Everything in `mcr.microsoft.com/playwright:v1.62.1-noble`; CI uses the same tag |
+
+The UI cooperates by construction: pure props-in-markup-out components, no state, no effects, no
+dates, no randomness, and every visual value resolving through a token in `src/styles/tokens.css`
+(which has zero unreferenced entries).
+
+---
+
+## Comparing against Figma
+
+This repo does **not** do that, and neither does any pixel-diff tool — for a hard technical reason:
+**Figma is not a browser.** It has its own rendering engine, with different kerning, hinting and
+antialiasing. Even with the identical font, the letters do not land on the same pixels. A strict
+diff against a Figma export always fails, and the tolerance needed to make it pass blinds the test.
+
+If you need automated design-vs-code checking, these exist and take a different approach — they
+compare **properties** or use perceptual AI, not raw pixels:
+
+| Tool | Approach |
+| --- | --- |
+| [Applitools](https://applitools.com/solutions/figma/) | Figma plugin, Visual AI design-to-code comparison |
+| [Uiprobe](https://www.uiprobe.io/learn/perfectpixel-alternatives-figma-design-qa) | Automated **property-level** comparison (spacing, colour, type) |
+| [Pixelay](https://www.hypermatic.com/pixelay/) | Figma-over-live-site overlay, 7 comparison modes |
+| PerfectPixel, Over.fig | Manual browser overlay |
+
+**The cheapest fix is structural, though.** If your Figma Variables are exported into
+`tokens.css` (via the Figma API or Style Dictionary), the values *are the same data* — there is
+nothing left to compare. Do that first; it beats any comparison tool and costs nothing.
 
 ---
 
 ## Layout
 
 ```
-src/styles/tokens.css     every visual value; the regression lever
-src/components/           Button (consumes --space-4) and Badge (the control group)
-src/routes/Gallery        6 isolated states, one data-testid each
-src/routes/Landing        the same components, composed
+src/styles/tokens.css   every visual value; the regression lever
+src/components/         Button (consumes --space-4) · Badge (the control group)
+src/routes/             Gallery (6 isolated states) · Landing (composed page)
 tests/visual/
-  components.spec.ts        per-component, per-state, plus a driven hover state
-  landing.spec.ts           full page with a masked timestamp + a clipped region
-  tolerance.spec.ts         documents what threshold and maxDiffPixelRatio do
-  screenshot.css            injected at capture time only
-  reporter.ts               console output built for reading diffs (see below)
-  __screenshots__/          the 10 committed baselines
-docker-compose.visual.yml       the authoritative environment
-docker-compose.amd64.yml        opt-in override to force amd64
-.github/workflows/visual.yml    same image tag — that identity is the whole thesis
+  components.spec.ts      per-component, per-state, plus a driven hover
+  landing.spec.ts         full page with a masked timestamp + a clipped region
+  tolerance.spec.ts       what threshold and maxDiffPixelRatio actually do
+  reporter.ts             console output built for reading diffs
+  __screenshots__/        the 10 committed baselines
+docker-compose.visual.yml     the authoritative environment
+.github/workflows/visual.yml  same image tag — that identity is the whole thesis
 ```
 
 ---
 
-## Honest limits
+## Limits
 
-- **Baselines are binary blobs in git.** Fine at 10 snapshots. At a few hundred, across several
-  viewports and themes, repository size becomes a real problem — and that is where hosted services
-  (Chromatic, Percy) start earning their cost. They solve baseline storage and team approval
-  workflow, not comparison; Playwright already does the comparison well.
-- **One browser, one viewport.** Adding Firefox, WebKit, or a mobile viewport multiplies the
-  baseline count by the number of combinations, not adds to it.
-- **This is a POC.** It proves the mechanism and quantifies the constraints. It does not address
-  review workflow, which is what actually decides whether a visual suite survives contact with a
-  team.
+- **Baselines are binary blobs in git.** Fine at 10. At a few hundred across viewports and themes,
+  repo size becomes real — that is where Chromatic/Percy start earning their cost.
+- **One browser, one viewport.** Adding more multiplies baselines, it does not add to them.
+- **Snapshot only what is stable and load-bearing.** Anything with live data, dates or relative
+  timestamps will be red every day, and a suite people ignore is worse than none.
 
 ## License
 
